@@ -16,6 +16,10 @@
       ]
     ],
     "name": "searchUserGithub",
-    "slug": "searchUserGithub"
+    "slug": "searchUserGithub",
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }
+

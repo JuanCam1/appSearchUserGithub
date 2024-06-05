@@ -1,95 +1,51 @@
-import { Link } from "expo-router";
-import React from "react";
-import { Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useEffect, useState } from "react";
+import { KeyboardAvoidingView, Platform, StatusBar, Text, View, Keyboard, Pressable } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import FormSearchUser from "@/components/FormSearchUser";
+import UserCardInfo from "@/components/UserCardInfo";
+
+import { type User } from "@/models/User.model";
 
 export default function Page() {
-  return (
-    <View className="flex flex-1">
-      <Header />
-      <Content />
-      <Footer />
-    </View>
-  );
-}
+  const [user, setUser] = useState<User | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-function Content() {
-  return (
-    <View className="flex-1">
-      <View className="py-12 md:py-24 lg:py-32 xl:py-48">
-        <View className="px-4 md:px-6">
-          <View className="flex flex-col items-center gap-4 text-center">
-            <Text
-              role="heading"
-              className="text-3xl text-center native:text-5xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl"
-            >
-              Welcome to Project ACME
-            </Text>
-            <Text className="mx-auto max-w-[700px] text-lg text-center text-gray-500 md:text-xl dark:text-gray-400">
-              Discover and collaborate on amce. Explore our services now.
-            </Text>
+  const getUser = async (username: string) => {
+    const res = await fetch(`https://api.github.com/users/${username}`);
+    if (!res.ok) {
+      setUser(null);
+      setError("User not found");
+      return;
+    }
+    setUser(await res.json());
+    setError(null);
+    Keyboard.dismiss()
+  };
 
-            <View className="gap-4">
-              <Link
-                suppressHighlighting
-                className="flex h-9 items-center justify-center overflow-hidden rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 web:shadow ios:shadow transition-colors hover:bg-gray-900/90 active:bg-gray-400/90 web:focus-visible:outline-none web:focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-                href="/"
-              >
-                Explore
-              </Link>
+  useEffect(() => {
+    getUser("JuanCam1")
+  }, [])
+  return (
+    <KeyboardAvoidingView className="flex-1" keyboardVerticalOffset={10} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <SafeAreaView className="flex-1">
+        <Pressable onPress={Keyboard.dismiss}>
+
+          <StatusBar barStyle="dark-content" />
+
+          <View className="flex flex-col gap-5 h-full items-center justify-center px-4 bg-blue-50">
+            <Text className="text-blue-800 font-bold text-3xl">Search User Github</Text>
+            <View className=" w-[100%] h-[70%] rounded-md p-2 " >
+
+              <FormSearchUser getUser={getUser} />
+              {user && <UserCardInfo user={user} />}
+              {error && (
+                <Text className=" mt-4 rounded-lg bg-red-500 p-4 text-white">{error}</Text>
+              )}
             </View>
           </View>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-function Header() {
-  const { top } = useSafeAreaInsets();
-  return (
-    <View style={{ paddingTop: top }}>
-      <View className="px-4 lg:px-6 h-14 flex items-center flex-row justify-between ">
-        <Link className="font-bold flex-1 items-center justify-center" href="/">
-          ACME
-        </Link>
-        <View className="flex flex-row gap-4 sm:gap-6">
-          <Link
-            className="text-md font-medium hover:underline web:underline-offset-4"
-            href="/"
-          >
-            About
-          </Link>
-          <Link
-            className="text-md font-medium hover:underline web:underline-offset-4"
-            href="/"
-          >
-            Product
-          </Link>
-          <Link
-            className="text-md font-medium hover:underline web:underline-offset-4"
-            href="/"
-          >
-            Pricing
-          </Link>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-function Footer() {
-  const { bottom } = useSafeAreaInsets();
-  return (
-    <View
-      className="flex shrink-0 bg-gray-100 native:hidden"
-      style={{ paddingBottom: bottom }}
-    >
-      <View className="py-6 flex-1 items-start px-4 md:px-6 ">
-        <Text className={"text-center text-gray-700"}>
-          © {new Date().getFullYear()} Me
-        </Text>
-      </View>
-    </View>
+        </Pressable>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
